@@ -35,7 +35,7 @@ function renderOrders() {
   let orderList = "";
   orders.forEach((item) => {
     const orderDate = new Date(item.createdAt * 1000).toISOString().slice(0, 10).replaceAll("-", "/");
-    const products = item.products.map((p) => `<p>${p.title} × ${p.quantity}</p>`).join("");
+    const products = item.products.map((product) => `${product.title} x${product.quantity}`).join("、");
     orderList += `<tr>
       <td>${item.id}</td>
       <td>
