@@ -2,6 +2,7 @@ const baseUrl = "https://livejs-api.hexschool.io/api/livejs/v1/customer/";
 const apiPath = "wayne";
 const productsApiUrl = `${baseUrl}${apiPath}/products`;
 const cartsApiUrl = `${baseUrl}${apiPath}/carts`;
+const ordersApiUrl = `${baseUrl}${apiPath}/orders`;
 
 let productsData = [];
 let cartsData = [];
@@ -18,25 +19,57 @@ const customerPhone = document.getElementById("customerPhone");
 const customerEmail = document.getElementById("customerEmail");
 const customerAddress = document.getElementById("customerAddress");
 const tradeWay = document.getElementById("tradeWay");
+const orderInfoForm = document.querySelector(".orderInfo-form");
 
 orderInfoBtn.addEventListener("click", (e) => {
   e.preventDefault();
+  customerName.nextElementSibling.style.display = "none";
+  customerPhone.nextElementSibling.style.display = "none";
+  customerEmail.nextElementSibling.style.display = "none";
+  customerAddress.nextElementSibling.style.display = "none";
   const name = customerName.value.trim();
   const tel = customerPhone.value.trim();
   const email = customerEmail.value.trim();
   const address = customerAddress.value.trim();
   const payment = tradeWay.value;
-  const formData = {
-    data: {
-      user: {
-        name,
-        tel,
-        email,
-        address,
-        payment,
+
+  let isError = false;
+
+  if (!name) {
+    console.log("請輸入姓名");
+    customerName.nextElementSibling.style.display = "block";
+    isError = true;
+  }
+  if (!tel) {
+    console.log("請輸入電話");
+    customerPhone.nextElementSibling.style.display = "block";
+    isError = true;
+  }
+  if (!email) {
+    console.log("請輸入email");
+    customerEmail.nextElementSibling.style.display = "block";
+    isError = true;
+  }
+  if (!address) {
+    console.log("請輸入地址");
+    customerAddress.nextElementSibling.style.display = "block";
+    isError = true;
+  }
+
+  if (!isError) {
+    const formData = {
+      data: {
+        user: {
+          name,
+          tel,
+          email,
+          address,
+          payment,
+        },
       },
-    },
-  };
+    };
+    submitOrder(formData);
+  }
 });
 
 shoppingCartTableBody.addEventListener("click", (e) => {
@@ -131,6 +164,12 @@ function renderCarts() {
   });
   shoppingCartTableBody.innerHTML = cartList;
   shoppingCartTotalPrice.textContent = `NT$${finalTotal}`;
+
+  if (!cartsData.length) {
+    orderInfoBtn.setAttribute("disabled", true);
+  } else {
+    orderInfoBtn.removeAttribute("disabled");
+  }
 }
 
 // 加入購物車
@@ -173,6 +212,19 @@ function deleteCart(id) {
       cartsData = res.data.carts;
       finalTotal = res.data.finalTotal;
       renderCarts();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+function submitOrder(formData) {
+  axios
+    .post(ordersApiUrl, formData)
+    .then((res) => {
+      console.log(res.data);
+      orderInfoForm.reset();
+      getCarts();
     })
     .catch((err) => {
       console.log(err);
